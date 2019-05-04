@@ -1,3 +1,9 @@
+#################################################
+# Andrew Scott
+# Flask SQLAlchemy 
+# May 2019
+#################################################
+
 import numpy as np
 
 import sqlalchemy
@@ -42,6 +48,8 @@ def welcome():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
+        f"/api/v1.0/start<br/>"
+        f"/api/v1.0/start/end<br/>"
     )
 
 
@@ -80,8 +88,6 @@ Return a JSON list of Temperature Observations (tobs) for the previous year."""
     tobs = list(np.ravel(tobs_results))
     return jsonify(tobs)
 
-#books = sess.query(Book).filter(Book.title.like(likeString))
-
 
 @app.route("/api/v1.0/<start>")
 def s_start(start):
@@ -93,14 +99,21 @@ def s_start(start):
     return jsonify(start1)
 
 @app.route("/api/v1.0/<start>/<end>")
-def s_start(start,end):
-    """Lolz"""
-    if end != None
-    results_start_end = session.query(func.min(Measurement.tobs),func.avg(Measurement.tobs),func.max(Measurement.tobs)).\
+def startend(start,end):
+    """Return a JSON list of the minimum temperature, the average temperature, and the max temperature for a given start or start-end range.
+When given the start only, calculate TMIN, TAVG, and TMAX for all dates greater than and equal to the start date.
+When given the start and the end date, calculate the TMIN, TAVG, and TMAX for dates between the start and end date inclusive."""
+    if end != None:
+        results_start_end = session.query(func.min(Measurement.tobs),func.avg(Measurement.tobs),func.max(Measurement.tobs)).\
         filter(Measurement.date >= start).all()
-    start_end = list(np.ravel(results_start_end))
-    return jsonify(start_end)
-
+        start_end = list(np.ravel(results_start_end))
+        return jsonify(start_end)
+    else:
+        results_start_end = session.query(func.min(Measurement.tobs),func.avg(Measurement.tobs),func.max(Measurement.tobs)).\
+        filter(Measurement.date >= start).\
+        filter(Measurement.date <= end).all()
+        start_end = list(np.ravel(results_start_end))
+        return jsonify(start_end)
 
 
 
